@@ -1,3 +1,33 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# mentalpy.py
+#
+# An educational Python wrapper for NVIDIA mental ray standalone.
+#
+# Generates .mi scene descriptions programmatically and pipes them
+# directly to the "ray" executable via stdin -- no DCC application
+# (Maya, 3ds Max) required. Designed for learning renderer internals
+# through human-readable scene descriptions.
+#
+# Features:
+#   - Look-at camera and light placement (world-to-camera inverse
+#     matrices computed internally; mental ray looks down the -Z axis)
+#   - Instance transforms with translate / rotate / scale properties
+#   - Classic shaders (mib_illum_phong etc.) and NVIDIA MDL materials
+#     can be mixed in one scene:
+#       mi.commands.append('$include "my_module.mdl"')
+#       mi.NewObjectInstance("inst", "geo",
+#           "mdl::my_module::my_material_proto_mtl")
+#   - Tested with the license-free mental ray standalone 3.14.5.x
+#
+# Requirements: Python 3.x (standard library only),
+#               mental ray standalone ("ray" on PATH)
+#
+# Copyright (c) 2026 Yuichirou Yokomakura
+# Released under the MIT License
+# https://opensource.org/licenses/MIT
+#
 import subprocess
 import sys
 import math
