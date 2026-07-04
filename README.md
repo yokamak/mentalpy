@@ -175,6 +175,39 @@ mi.Run()
 カメラ、真上から、上空カメラ（デバッグ用）
 ![mi01_02_02.jpg](https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/4243812/83a1e7f5-1a4a-48ed-b147-c64f3958e3d6.jpeg)
 
+## NVIDIA vMaterials を使う
+vMaterials をインストール(検証は v1.7.0)します。インストールすると、既定で%USERPROFILE%\Documents\mdl\ 配下にカタログが展開されます。
+
+### 自作mdlファイルを作成
+Documents\mdl 直下に自作ファイル(例: my_variants.mdl)を1つ作ります:
+```
+mdl 1.3;
+import ::nvidia::vMaterials::Design::Plastic::Hard::*;
+
+export material plastic_hard_sakura(*)
+= ::nvidia::vMaterials::Design::Plastic::Hard::plastic_hard_salmon(
+    base_color: color(0.85, 0.45, 0.50)
+);
+```
+
+### 命名規則:
+```
+mdl::<モジュール修飾名>::<マテリアル名>_proto_mtl
+```
+
+### MDL使ったシーン記述例:
+```python
+mi = mentalpy.MentalRayInterface()
+mi.commands.append('$include "my_variants.mdl"')  # ← これと
+mi.SetOptions()
+# ...(カメラ・ライト・ジオメトリはそのまま)...
+
+# 🌸 4つ目の箱:vMaterialsバリアントの「桜色の立方体」
+mi.NewObjectInstance("cube4_inst", 'cube_geo',
+    'mdl::my_variants::plastic_hard_sakura_proto_mtl')  # ← これだけ
+mi.SetProperty3("cube4_inst", 'translate', 24, 5, 0)
+```
+
 ## 参考資料
 
 https://zenn.dev/yokamak/articles/90d9d6191a72c0
@@ -190,6 +223,10 @@ https://qiita.com/yokamak/items/6adfda4894e964d8ee0a
 https://qiita.com/yokamak/items/6f483172223d39e61f7e
 
 https://qiita.com/yokamak/items/3b11140154e87c264305
+
+https://zenn.dev/yokamak/articles/1e6f8e2729ed75
+
+https://zenn.dev/yokamak/articles/5e732a7cccf33c
 
 ## おわりに
 
