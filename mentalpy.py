@@ -1,33 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# mentalpy.py
-#
-# An educational Python wrapper for NVIDIA mental ray standalone.
-#
-# Generates .mi scene descriptions programmatically and pipes them
-# directly to the "ray" executable via stdin -- no DCC application
-# (Maya, 3ds Max) required. Designed for learning renderer internals
-# through human-readable scene descriptions.
-#
-# Features:
-#   - Look-at camera and light placement (world-to-camera inverse
-#     matrices computed internally; mental ray looks down the -Z axis)
-#   - Instance transforms with translate / rotate / scale properties
-#   - Classic shaders (mib_illum_phong etc.) and NVIDIA MDL materials
-#     can be mixed in one scene:
-#       mi.commands.append('$include "my_module.mdl"')
-#       mi.NewObjectInstance("inst", "geo",
-#           "mdl::my_module::my_material_proto_mtl")
-#   - Tested with the license-free mental ray standalone 3.14.5.x
-#
-# Requirements: Python 3.x (standard library only),
-#               mental ray standalone ("ray" on PATH)
-#
-# Copyright (c) 2026 Yuichirou Yokomakura
-# Released under the MIT License
-# https://opensource.org/licenses/MIT
-#
 import subprocess
 import sys
 import math
@@ -37,19 +7,110 @@ class MentalRayInterface:
         self.commands = []
         self.instgroup_members = []
         self.instance_transforms = {}
-        self.commands.append('verbose off\nlink "base.so"\n$include <base.mi>\n')
+        self.commands.append('verbose off\nlink "base.so"\n$include <base.mi>\nlink "contour.dll"\n$include <contour.mi>\nlink "physics.dll"\n$include <physics.mi>\nlink "paint.dll"\n$include <paint.mi>\nlink "architectural.dll"\n$include <architectural.mi>\nlink "production.dll"\n$include <production.mi>\nlink "mayabase.dll"\n$include <mayabase.mi>\nlink "AdskShaderSDK.dll"\n$include <AdskShaderSDK.mi>')
 
-    def SetOptions(self, samples_min=-1, samples_max=2):
+    def SetOptions(self, samples_min=0, samples_max=2):
         options = (
             f'options "opt"\n'
             f'    samples      {samples_min} {samples_max}\n'
             f'    contrast     .1 .1 .1 .1\n'
-            f'    trace depth  2 2\n'
-            f'    globillum    on\n'
-            f'    finalgather  on\n'
+            f'    object space\n'
+            f'    desaturate off\n'
+            f'    colorclip rgb\n'
+            f'    premultiply on\n'
+            f'    dither on\n'
+            f'    gamma 1.\n'
+            f'    acceleration bsp\n'
+            f'    bsp size 10\n'
+            f'    bsp depth 40\n'
+            f'    task size 0\n'
+            f'    contrast 0.05 0.05 0.05 0.05\n'
+            f'    filter box 1. 1.\n'
+            f'    jitter 0.\n'
+            f'    samplelock on\n'
+            f'    scanline off\n'
+            f'    trace on\n'
+            f'    trace depth 2 2 3\n'
+            f'    shadow on\n'
+            f'    shadowmap on\n'
+            f'    shadowmap rebuild on\n'
+            f'    "shadowmap pixel samples" 3\n'
+            f'    caustic on\n'
+            f'    caustic accuracy 500 3.0 \n'
+            f'    caustic filter cone\n'
+            f'    photonmap file "caustic_map.pm"\n'
+            f'    globillum on\n'
+            f'    globillum 0\n'
+            f'    globillum accuracy 500 0.\n'
+            f'    globillum scale 1. 1. 1. 1.\n'
+            f'    photonvol accuracy 30 0.\n'
+            f'    photonvol scale 1. 1. 1. 1.\n'
+            f'    photon autovolume off\n'
+            f'    photon trace depth 5 5 5\n'
+            f'    photonmap rebuild on\n'
+            f'    finalgather on\n'
+            f'    finalgather accuracy 100\n'
+            f'    finalgather scale 1. 1. 1. 1.\n'
+            f'    finalgather secondary scale 1. 1. 1. 1.\n'
+            f'    finalgather rebuild on\n'
+            f'    finalgather filter 0\n'
+            f'    finalgather falloff 0. 0.\n'
+            f'    finalgather trace depth 1 1 0 2\n'
+            f'    finalgather presample density 1.\n'
+            f'    "finalgather mode" "automatic"\n'
+            f'    "finalgather points" 10\n'
+            f'    lens on\n'
+            f'    volume on\n'
+            f'    geometry on\n'
+            f'    displace on\n'
+            f'    displace presample on\n'
+            f'    output on\n'
+            f'    merge on\n'
+            f'    autovolume off\n'
+            f'    hair on\n'
+            f'    pass on\n'
+            f'    face both\n'
+            f'    "ambient occlusion" off\n'
+            f'    "ambient occlusion cache" off\n'
+            f'    "ambient occlusion cache density" 1.\n'
+            f'    "ambient occlusion cache points" 64\n'
+            f'    "ambient occlusion rays" 256\n'
+            f'    "contrast all buffers" on\n'
+            f'    "geom displace motion factor" 1.\n'
+            f'    "importon" off\n'
+            f'    "importon density" 1.\n'
+            f'    "importon merge" 0.\n'
+            f'    "importon trace depth" 0\n'
+            f'    "importon traverse" on\n'
+            f'    "irradiance particles" off\n'
+            f'    "irradiance particles env" on\n'
+            f'    "irradiance particles env rays" 256\n'
+            f'    "irradiance particles env scale" 1\n'
+            f'    "irradiance particles indirect passes" 0\n'
+            f'    "irradiance particles interpolate" 1\n'
+            f'    "irradiance particles interppoints" 64\n'
+            f'    "irradiance particles rays" 256\n'
+            f'    "irradiance particles rebuild" on\n'
+            f'    "irradiance particles scale" 1.\n'
+            f'    "rast motion factor" 1.\n'
+            f'    "rast transparency depth" 8\n'
+            f'    "raster use opacity" on\n'
+            f'    "shadowmap pixel samples" 3\n'
+            f'    "maya custom alpha" on\n'
+            f'    "maya custom depth" off\n'
+            f'    "maya custom label" off\n'
+            f'    "maya filter size compute" on\n'
+            f'    "maya filter size default" 0.0001\n'
+            f'    "maya reflection blur limit" 1\n'
+            f'    "maya refraction blur limit" 1\n'
+            f'    "maya render pass" 0\n'
+            f'    "maya shader glow" on\n'
+            f'    "maya shader glow buffer" "mayaGlow"\n'
+            f'    "maya shadow limit" 2\n'
             f'end options\n'
         )
         self.commands.append(options)
+
 
     def _compute_lookat_matrix(self, pos, target, roll=0.0, scale=1.0):
         f_x = pos[0] - target[0]
